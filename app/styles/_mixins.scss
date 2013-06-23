@@ -1,0 +1,62 @@
+@mixin vendor-prefix($name, $argument) {
+  #{$name}: $argument;
+  -webkit-#{$name}: $argument;
+  -ms-#{$name}: $argument;
+  -moz-#{$name}: $argument;
+  -o-#{$name}: $argument;
+}
+
+@mixin linear-gradient($direction, $stops) {
+
+}
+
+@mixin calc($property, $calcOp) {
+  #{$property}: #{-webkit-calc(#{$calcOp})};
+  #{$property}: #{calc(#{$calcOp})};
+}
+
+@mixin stageScale($stageSize) {
+  $stageRadius: ($stageSize/2);
+  #stage {
+    @include vendor-prefix(translate3d, (0, 0, 0));
+    @include vendor-prefix(perspective, $stageRadius * 3.141592653589793);
+    width: $stageSize;
+    height: $stageSize;
+    top: -webkit-calc(50% - #{$stageRadius});
+    top: calc(50% - #{$stageRadius});
+    left: -webkit-calc(50% - #{$stageRadius});
+    left: calc(50% - #{$stageRadius});
+  }
+  #creeper {
+    height: 0;
+    width: 0;
+    color: transparent;
+    position: absolute;
+    pointer-events: none;
+    // Really shameless hacks here to pass the values generated
+    // by Sass with the media queries. I regret nothing.
+    top: $stageSize; // $stageSize
+    left: -10000;
+    margin-right: $stageRadius; // $stageRadius
+    margin-top: $numberOfColumns; // $numberOfColumns;
+  }
+  .jprs_tile_col {
+    height: $stageSize;
+    @for $i from 1 through ($numberOfColumns + 1) {
+      &[data-colnum="#{$i}"] {
+        $transforms: rotateY(#{(360/$numberOfColumns) * $i}deg) translateZ($stageRadius);
+        @include vendor-prefix(transform, $transforms);
+      }
+    }
+    .jprs_tile {
+      height: calc(#{$stageSize/7.5} - #{$tileBorderWidth * 2});
+      &:before {
+        font-size: $stageSize/7.5 * 0.8;
+        line-height: $stageSize/7.5;
+      }
+    }
+    &:nth-child(odd) .jprs_tile:first-child {
+      margin-top: ($stageSize - (($stageSize/7.5) * 7));
+    }
+  }
+}
