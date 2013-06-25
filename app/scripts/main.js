@@ -31,6 +31,37 @@
 
     var _CURRENT_WORD_VALID = true;
 
+    var _CURRENT_SCORE = 0;
+
+    var LETTER_VALUES = {
+        "A": 1,
+        "B": 3,
+        "C": 3,
+        "D": 2,
+        "E": 1,
+        "F": 4,
+        "G": 2,
+        "H": 4,
+        "I": 1,
+        "J": 8,
+        "K": 5,
+        "L": 1,
+        "M": 3,
+        "N": 1,
+        "O": 1,
+        "P": 3,
+        "Q": 10,
+        "R": 1,
+        "S": 1,
+        "T": 1,
+        "U": 1,
+        "V": 4,
+        "W": 4,
+        "X": 8,
+        "Y": 4,
+        "Z": 10
+    }
+
     /**
      * Retrieves variables shamelessly stored in the CSS properties of an
      * invisible, off-canvas element, `#creeper`, which have been generated
@@ -72,6 +103,7 @@
      */
     function refreshColumns() {
         var $msg = $('#msg')
+            , $score = $('#score')
             , zDepth = creeper().stageRadius
             , spin = parseInt($stage().attr('data-spin'));
         VELOCITY = Math.min(VELOCITY * VELOCITY_DECAY_AMT, MAX_VELOCITY);
@@ -86,9 +118,10 @@
                 webkitTransform: 'rotateY(' + angle + 'deg) translateZ(' + zDepth + 'px)'
             });
         });
-        if ($msg.text() != _MESSAGE && _MESSAGE != '') {
+        if ($msg.text() != _MESSAGE) {
             $msg.text(_MESSAGE)
         }
+        $score.text(_CURRENT_SCORE);
 
         return true;
     }
@@ -173,16 +206,50 @@
             $('#' + sel.id).removeClass('jprs_selected_tile')
         });
         SELECTIONS = [];
+        setMessage('');
     }
 
     function testSelection() {
         var word = currentChars();
+        if (word.length < 1) return;
+        _CURRENT_WORD_VALID = !_.isEmpty(wordsStartingWith(word));
         setMessage(word);
     }
 
     function endSelection() {
-        console.log('endSelection');
+        testSelection();
+        if (_CURRENT_WORD_VALID) {
+            _CURRENT_SCORE = _CURRENT_SCORE + _(currentChars())
+                .map(function(letter) {
+                    return letter
+                })
+                .reduce(function(memo, letter) {
+                    return memo + LETTER_VALUES[letter]
+                }, 0)
+        }
         clearSelection();
+    }
+
+    function cacheWordList(word) {
+        var firstLetter = _.first(word).toLowerCase()
+            , listForChar = 'words-' + firstLetter;
+        if (!localStorage.getItem('jprs_' + listForChar)) {
+            console.log('No word list for letter "' + firstLetter + '"');
+            $.get('/words/' + listForChar + '.txt', {}, function (result) {
+                localStorage.setItem('jprs_' + listForChar, JSON.stringify(result.split('\n')));
+            })
+        }
+    }
+
+    function wordsStartingWith(word) {
+        cacheWordList(word);
+        var regex = new RegExp("^" + word)
+            , _list = _(JSON.parse(localStorage.getItem('jprs_words-' + _.first(word).toLowerCase())));
+        return _list
+            .filter(function (word) {
+                return regex.test(word)
+            })
+            .value()
     }
 
     function startSpinning() {
@@ -240,6 +307,7 @@
     jeepers.addSelectedTile = addSelectedTile;
     jeepers.testSelection = testSelection;
     jeepers.endSelection = endSelection;
+    jeepers.wordsStartingWith = wordsStartingWith;
     jeepers.setMessage = setMessage;
     jeepers.spin = spin;
     jeepers.startSpinning = startSpinning;
@@ -374,7 +442,7 @@ $(document).ready(function () {
                 ? $(event.target)
                 : $(event.target).parents('jprs_tile')
                 , adjacent = Jeepers.adjacentTiles($tile)
-                , inside = event.type == 'mouseenter' || event.type == 'touchenter';
+                , inside = event.type == 'jprs:tile:entering';
             $tile.toggleClass('jprs_hover_tile', inside);
             [].forEach.call(_.values(adjacent), function ($at) {
                 $at.toggleClass('jprs_adjacent_tile', inside);

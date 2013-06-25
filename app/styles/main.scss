@@ -14,12 +14,20 @@ body {
   overflow: hidden;
 }
 
+#msg, #score {
+  text-align: center;
+}
+
 #stage {
   position: absolute;
   @include vendor-prefix(transform-style, preserve-3d);
   &:after {
     content: $numberOfColumns;
     color: transparent;
+  }
+  &.jprs_selection_not_word .jprs_selected_tile {
+    background-color: rgba(255, 64, 64, 0.8);
+    box-shadow: 0 0 20px 5px rgba(127, 0, 0, 0.66);
   }
 }
 
