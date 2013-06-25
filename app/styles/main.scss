@@ -28,6 +28,7 @@ body {
   &.jprs_selection_not_word .jprs_selected_tile {
     background-color: rgba(255, 64, 64, 0.8);
     box-shadow: 0 0 20px 5px rgba(127, 0, 0, 0.66);
+    border-color: rgba(64, 0, 0, 1);
   }
 }
 

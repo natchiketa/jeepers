@@ -60,7 +60,7 @@
         "X": 8,
         "Y": 4,
         "Z": 10
-    }
+    };
 
     /**
      * Retrieves variables shamelessly stored in the CSS properties of an
