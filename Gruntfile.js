@@ -1,6 +1,6 @@
 // Generated on 2013-06-21 using generator-webapp 0.2.2
 'use strict';
-var LIVERELOAD_PORT = 35729;
+var LIVERELOAD_PORT = 35730;
 var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
 var mountFolder = function (connect, dir) {
     return connect.static(require('path').resolve(dir));
@@ -26,7 +26,7 @@ module.exports = function (grunt) {
         yeoman: yeomanConfig,
         watch: {
             options: {
-                nospawn: true
+                nospawn: false
             },
             coffee: {
                 files: ['<%= yeoman.app %>/scripts/{,*/}*.coffee'],
@@ -38,10 +38,10 @@ module.exports = function (grunt) {
             },
             compass: {
                 files: [
-//                    '<%= yeoman.app %>/styles/{,*/}*.{scss,sass}',
-                    '<%= yeoman.app %>/styles/main.scss',
+                    '<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'
+/*                    '<%= yeoman.app %>/styles/main.scss',
                     '<%= yeoman.app %>/styles/*.{scss,sass}'
-                ],
+*/                ],
                 tasks: ['compass:server']
             },
             livereload: {
@@ -59,7 +59,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                port: 9000,
+                port: 9009,
                 // change this to '0.0.0.0' to access the server from outside
                 hostname: '0.0.0.0'
             },
