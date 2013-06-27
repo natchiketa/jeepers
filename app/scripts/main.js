@@ -160,12 +160,21 @@
 
     function addTileToSelection($tile) {
         console.log('addTileToSelection');
-        SELECTIONS.push({
-            col: $tile.parents('.jprs_tile_col').attr('data-colnum'),
-            idx: $tile.index() + 1,
-            id: $tile.attr('id'),
-            char: $tile.attr('data-char')
-        });
+        var idxIfTileInSelection = _.indexOf(_.pluck(SELECTIONS, 'id'), $tile.attr('id'))
+            , removed;
+        if (idxIfTileInSelection >= 0) {
+            removed = SELECTIONS.splice(idxIfTileInSelection + 1, SELECTIONS.length - idxIfTileInSelection + 1);
+            _(removed).each(function(t) {
+                $('#' + t.id).removeClass('jprs_selected_tile');
+            });
+        } else {
+            SELECTIONS.push({
+                col: $tile.parents('.jprs_tile_col').attr('data-colnum'),
+                idx: $tile.index() + 1,
+                id: $tile.attr('id'),
+                char: $tile.attr('data-char')
+            });
+        }
         $tile.addClass('jprs_selected_tile');
     }
 

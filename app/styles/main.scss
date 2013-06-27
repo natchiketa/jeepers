@@ -12,6 +12,7 @@ body {
   min-height: 100%;
   position: absolute;
   overflow: hidden;
+  @include user-select(none);
 }
 
 #msg, #score {
