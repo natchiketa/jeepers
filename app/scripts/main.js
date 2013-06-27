@@ -209,15 +209,16 @@
         setMessage('');
     }
 
-    function testSelection() {
+    function testSelection(wholeWordMatch) {
+        wholeWordMatch = _.isUndefined(wholeWordMatch) ? false : !!wholeWordMatch;
         var word = currentChars();
         if (word.length < 1) return;
-        _CURRENT_WORD_VALID = !_.isEmpty(wordsStartingWith(word));
+        _CURRENT_WORD_VALID = !_.isEmpty(wordsStartingWith(word, wholeWordMatch));
         setMessage(word);
     }
 
     function endSelection() {
-        testSelection();
+        testSelection(true);
         if (_CURRENT_WORD_VALID) {
             _CURRENT_SCORE = _CURRENT_SCORE + _(currentChars())
                 .map(function(letter) {
@@ -241,13 +242,14 @@
         }
     }
 
-    function wordsStartingWith(word) {
+    function wordsStartingWith(word, wholeWordMatch) {
+        wholeWordMatch = _.isUndefined(wholeWordMatch) ? false : !!wholeWordMatch;
         cacheWordList(word);
         var regex = new RegExp("^" + word)
             , _list = _(JSON.parse(localStorage.getItem('jprs_words-' + _.first(word).toLowerCase())));
         return _list
-            .filter(function (word) {
-                return regex.test(word)
+            .filter(function (w) {
+                return wholeWordMatch ? (w == word) : regex.test(word)
             })
             .value()
     }
