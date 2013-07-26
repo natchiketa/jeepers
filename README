@@ -1,1 +1,1 @@
-This file was created by JetBrains WebStorm 6.0.2 for binding GitHub repository
+A word-forming game like Bookworm or WordWeb. Mainly DOM-element based, using jQuery, CSS transforms and some use of the `canvas` element for effects.
