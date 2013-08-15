@@ -69,6 +69,13 @@ body {
     &.jprs_adjacent_tile {
       background-color: rgba(255, 255, 0, 0.9);
     }
+    &.jprs_remove_tile {
+      opacity: 0;
+      pointer-events: none;
+    }
+    &.jprs_new_tile {
+      height: 0;
+    }
     &.jprs_selected_tile {
       background-color: rgba(64, 255, 64, 1);
       border-color: rgba(127, 255, 127, 0.8);

@@ -33,6 +33,10 @@
 
     var _CURRENT_SCORE = 0;
 
+    var _REGULAR_TILE_HEIGHT;
+
+    var _NEED_NEW_TILE_HEIGHT = true;
+
     var LETTER_VALUES = {
         "A": 1,
         "B": 3,
@@ -109,6 +113,7 @@
         VELOCITY = Math.min(VELOCITY * VELOCITY_DECAY_AMT, MAX_VELOCITY);
         VELOCITY = Math.max(VELOCITY, MIN_VELOCITY);
         spin = spin + VELOCITY;
+
         $stage()
             .toggleClass('jprs_selection_not_word', !_CURRENT_WORD_VALID)
             .attr('data-spin', spin);
@@ -116,6 +121,20 @@
             var angle = ((360 / COLUMNS) * parseInt($(this).attr('data-colnum'))) + spin;
             $(this).css({
                 webkitTransform: 'rotateY(' + angle + 'deg) translateZ(' + zDepth + 'px)'
+            });
+            _.each($('.jprs_remove_tile', this), function(tile) {
+                if ($(tile).height() > 5) {
+                    $(tile).height($(tile).height() - 5)
+                } else {
+                    $(tile).remove();
+                }
+            });
+            _.each($('.jprs_new_tile', this), function(tile) {
+                if ($(tile).height() != tileHeight()) {
+                    $(tile).height(Math.min(tileHeight(), $(tile).height() + 5))
+                } else {
+                    $(tile).removeClass('jprs_new_tile');
+                }
             });
         });
         if ($msg.text() != _MESSAGE) {
@@ -159,7 +178,6 @@
     }
 
     function addTileToSelection($tile) {
-        console.log('addTileToSelection');
         var idxIfTileInSelection = _.indexOf(_.pluck(SELECTIONS, 'id'), $tile.attr('id'))
             , removed;
         if (idxIfTileInSelection >= 0) {
@@ -210,9 +228,15 @@
         return _(SELECTIONS).pluck('char').value().join('');
     }
 
-    function clearSelection() {
+    function clearSelection(options) {
+        options = options || {};
         _(SELECTIONS).each(function (sel) {
-            $('#' + sel.id).removeClass('jprs_selected_tile')
+            $('#' + sel.id)
+                .removeClass('jprs_selected_tile')
+                .toggleClass('jprs_remove_tile', options.remove);
+            if (options.remove) {
+                $('#' + sel.id).parents('.jprs_tiles').prepend($newTile().addClass('jprs_new_tile'))
+            }
         });
         SELECTIONS = [];
         setMessage('');
@@ -237,7 +261,7 @@
                     return memo + LETTER_VALUES[letter]
                 }, 0)
         }
-        clearSelection();
+        clearSelection({remove: _CURRENT_WORD_VALID});
     }
 
     function cacheWordList(word) {
@@ -297,6 +321,26 @@
         return $('#stage');
     }
 
+    function $newTile() {
+        return $('<div/>', {
+            "class": "jprs_tile",
+            "data-char": String.fromCharCode(65 + Math.round(Math.random() * 25)),
+            "id": _.uniqueId('jprs_tile-')
+        });
+    }
+
+    function tileHeight() {
+        if (_.isUndefined(_REGULAR_TILE_HEIGHT) || _NEED_NEW_TILE_HEIGHT) {
+            _REGULAR_TILE_HEIGHT = $('.jprs_tile:not(.jprs_new_tile)').height();
+            _NEED_NEW_TILE_HEIGHT = false;
+        }
+        return _REGULAR_TILE_HEIGHT;
+    }
+
+    function requestTileHeight() {
+        _NEED_NEW_TILE_HEIGHT = true;
+    }
+
     function spin(velocityObj) {
         var current = parseFloat($stage().attr('data-spin'))
             , v = velocityObj.velocity * VELOCITY_FACTOR
@@ -327,6 +371,8 @@
     jeepers.getLastSpinPos = getLastSpinPos;
     jeepers.setLastSpinPos = setLastSpinPos;
     jeepers.setVelocity = setVelocity;
+    jeepers.$newTile = $newTile;
+    jeepers.requestTileHeight = requestTileHeight;
     jeepers._SELECTIONS = SELECTIONS;
 
     this.Jeepers = jeepers;
@@ -367,13 +413,7 @@ $(document).ready(function () {
             .append($('<div/>').addClass('jprs_tiles'));
 
         for (var j = _TILES_PER_COLUMN; j > 0; j--) {
-            $('.jprs_tiles', $col).append(
-                $('<div/>', {
-                    "class": "jprs_tile",
-                    "data-char": String.fromCharCode(65 + Math.round(Math.random() * 25)),
-                    "id": _.uniqueId('jprs_tile-')
-                })
-            );
+            $('.jprs_tiles', $col).append(Jeepers.$newTile());
         }
         $col.prependTo('#stage');
     }
@@ -520,8 +560,7 @@ $(document).ready(function () {
 
     });*/
 
-//    $(window).on('resize', );
-
+    $(window).on('resize', Jeepers.requestTileHeight);
 
     (function animloop(){
         requestAnimFrame(animloop);
